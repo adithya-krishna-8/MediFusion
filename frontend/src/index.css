@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #020617; /* slate-950 */
+  }
+
+  .font-serif {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Animated gradient blob background */
+@keyframes gradient-blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.gradient-blob {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.3), rgba(59, 130, 246, 0.2));
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: gradient-blob 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gradient-blob-2 {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.15));
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: gradient-blob 25s ease-in-out infinite reverse;
+  pointer-events: none;
+  z-index: 0;
+  top: 50%;
+  right: 10%;
+}
+
