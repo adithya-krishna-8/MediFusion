@@ -5,6 +5,8 @@ from database import get_db
 from models import User
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+from pydantic import BaseModel
+from typing import Optional
 import os
 
 # Define and export the router
@@ -89,3 +91,50 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
     return user
+
+# Pydantic Model for Update
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    age: Optional[int] = None
+    height: Optional[str] = None
+    weight: Optional[str] = None
+    blood_type: Optional[str] = None
+
+# 4. GET PROFILE
+@router.get("/me")
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return {
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "age": current_user.age,
+        "height": current_user.height,
+        "weight": current_user.weight,
+        "blood_type": current_user.blood_type,
+        "role": current_user.role
+    }
+
+# 5. UPDATE PROFILE
+@router.put("/me")
+async def update_user_me(user_update: UserProfileUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if user_update.full_name is not None:
+        current_user.full_name = user_update.full_name
+    if user_update.age is not None:
+        current_user.age = user_update.age
+    if user_update.height is not None:
+        current_user.height = user_update.height
+    if user_update.weight is not None:
+        current_user.weight = user_update.weight
+    if user_update.blood_type is not None:
+        current_user.blood_type = user_update.blood_type
+    
+    db.commit()
+    db.refresh(current_user)
+    return {
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "age": current_user.age,
+        "height": current_user.height,
+        "weight": current_user.weight,
+        "blood_type": current_user.blood_type,
+        "role": current_user.role
+    }

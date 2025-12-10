@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import HeartHealth from './pages/HeartHealth';
+import Profile from './pages/Profile';
 import HeartLibrary from './pages/HeartLibrary';
 import DiseaseDetection from './components/DiseaseDetection';
 import './App.css';
@@ -26,6 +27,14 @@ const AppContent = () => {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

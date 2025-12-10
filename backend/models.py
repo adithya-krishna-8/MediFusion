@@ -12,6 +12,9 @@ class User(Base):
     hashed_password = Column(String)
     full_name = Column(String, nullable=True)
     age = Column(Integer, nullable=True)
+    height = Column(String, nullable=True) # e.g. "180 cm"
+    weight = Column(String, nullable=True) # e.g. "75 kg"
+    blood_type = Column(String, nullable=True)
     role = Column(String, default="patient")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     

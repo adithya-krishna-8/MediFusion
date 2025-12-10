@@ -51,6 +51,12 @@ const Navbar = () => {
                   >
                     Heart Health
                   </Link>
+                  <Link
+                    to="/profile"
+                    className="text-slate-300 hover:text-white font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                  >
+                    Profile
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="text-red-400 hover:text-red-300 font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]"
