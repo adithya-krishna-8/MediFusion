@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = (import.meta.env.VITE_API_URL || 'http://localhost/api').replace(/\/$/, '');
+const baseURL = (process.env.REACT_APP_API_URL || 'http://localhost/api').replace(/\/$/, '');
 
 const axiosClient = axios.create({
   baseURL: baseURL,

@@ -15,7 +15,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U medifusion_user -d medifusion_db"]
+      test: [ "CMD-SHELL", "pg_isready -U medifusion_user -d medifusion_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,14 +27,14 @@ services:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
     ports:
-      - "5672:5672"    # AMQP port
-      - "15672:15672"  # Management interface
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management interface
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,7 +49,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -110,7 +110,7 @@ services:
       dockerfile: Dockerfile
     container_name: medifusion-frontend
     environment:
-      - VITE_API_URL=http://localhost/api
+      - REACT_APP_API_URL=http://localhost/api
     ports:
       - "3000:3000"
     volumes:
