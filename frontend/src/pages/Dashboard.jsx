@@ -186,68 +186,26 @@ const Dashboard = () => {
         text: symptomsList.join(', ')
       };
 
-      // Submit symptoms using axiosClient - correct path: /disease/predict
-      const submitResponse = await axiosClient.post('/disease/predict', requestData, {
+      // Submit symptoms using axiosClient
+      // Now simpler: The backend returns the result immediately (Simplified Mode)
+      const response = await axiosClient.post('/disease/predict', requestData, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      const taskId = submitResponse.data.task_id;
-      const consultationId = submitResponse.data.consultation_id;
 
-      pollingIntervalRef.current = setInterval(async () => {
-        try {
-          // Pass consultation_id as query parameter for fallback database update
-          const response = await axiosClient.get(`/disease/result/${taskId}`, {
-            params: { consultation_id: consultationId }
-          });
+      if (response.data.status === 'SUCCESS') {
+        setResult(response.data.result);
+      } else {
+        setError(response.data.error || 'An error occurred during analysis');
+      }
 
-          if (response.data.status === 'SUCCESS') {
-            const resultData = response.data.result;
+      setIsLoading(false);
 
-            // Check for application-level error (e.g. Quota exceeded) inside the result
-            if (resultData && resultData.status === 'error') {
-              if (pollingIntervalRef.current) {
-                clearInterval(pollingIntervalRef.current);
-                pollingIntervalRef.current = null;
-              }
-              setIsLoading(false);
-              setError(resultData.error || 'An error occurred during diagnosis');
-            } else {
-              // Real success
-              if (pollingIntervalRef.current) {
-                clearInterval(pollingIntervalRef.current);
-                pollingIntervalRef.current = null;
-              }
-              setIsLoading(false);
-              setResult(resultData);
-            }
-          } else if (response.data.status === 'FAILURE' || response.data.status === 'REVOKED') {
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-              pollingIntervalRef.current = null;
-            }
-            setIsLoading(false);
-            setError('An error occurred during analysis');
-          }
-          // If status is PENDING or other, continue polling
-        } catch (err) {
-          console.error('Error polling result:', err);
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
-          setIsLoading(false);
-          setError(getErrorMessage(err));
-        }
-      }, 2000);
     } catch (err) {
+      console.error('Analysis error:', err);
       setIsLoading(false);
       setError(getErrorMessage(err));
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
     }
   };
 
