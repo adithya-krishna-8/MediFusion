@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
+import HeartHealth from './pages/HeartHealth';
 import HeartLibrary from './pages/HeartLibrary';
 import DiseaseDetection from './components/DiseaseDetection';
 import './App.css';
@@ -33,6 +34,14 @@ const AppContent = () => {
           element={
             <ProtectedRoute>
               <History />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/heart-health"
+          element={
+            <ProtectedRoute>
+              <HeartHealth />
             </ProtectedRoute>
           }
         />

@@ -46,7 +46,7 @@ const Navbar = () => {
                     History
                   </Link>
                   <Link
-                    to="/heart-library"
+                    to="/heart-health"
                     className="text-slate-300 hover:text-white font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                   >
                     Heart Health
