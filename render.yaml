@@ -1,0 +1,63 @@
+services:
+  # The Web API (FastAPI)
+  - type: web
+    name: medifusion-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medifusion-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: medifusion-redis
+          property: connectionString
+      - key: RABBITMQ_URL # We use Redis as broker too to save costs/complexity
+        fromService:
+          type: redis
+          name: medifusion-redis
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false # User must provide this
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  # The Background Worker (Celery)
+  - type: worker
+    name: medifusion-worker
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A worker.celery_app worker --loglevel=info
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medifusion-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: medifusion-redis
+          property: connectionString
+      - key: RABBITMQ_URL
+        fromService:
+          type: redis
+          name: medifusion-redis
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+databases:
+  - name: medifusion-db
+    databaseName: medifusion_db
+    user: medifusion_user
+    plan: free # Free tier Postgres
+
+  - name: medifusion-redis
+    plan: free # Free tier Redis
