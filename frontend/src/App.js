@@ -3,32 +3,24 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
-import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import HeartHealth from './pages/HeartHealth';
 import Profile from './pages/Profile';
 import HeartLibrary from './pages/HeartLibrary';
 import DiseaseDetection from './components/DiseaseDetection';
+import MedicineTracker from './pages/MedicineTracker';
 import './App.css';
 
 // Component to conditionally show Navbar
 const AppContent = () => {
-  const location = useLocation();
-  const showNavbar = location.pathname !== '/login';
-
   return (
     <>
-      {showNavbar && <Navbar />}
+      <Navbar />
       <Routes>
-        <Route path="/login" element={<Login />} />
         <Route
           path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
+          element={<Dashboard />}
         />
         <Route
           path="/profile"
@@ -48,11 +40,7 @@ const AppContent = () => {
         />
         <Route
           path="/heart-health"
-          element={
-            <ProtectedRoute>
-              <HeartHealth />
-            </ProtectedRoute>
-          }
+          element={<HeartHealth />}
         />
         <Route
           path="/heart-library"
@@ -67,6 +55,14 @@ const AppContent = () => {
           element={
             <ProtectedRoute>
               <DiseaseDetection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/medicines"
+          element={
+            <ProtectedRoute>
+              <MedicineTracker />
             </ProtectedRoute>
           }
         />

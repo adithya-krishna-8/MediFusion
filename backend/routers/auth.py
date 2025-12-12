@@ -8,6 +8,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from typing import Optional
 import os
+from celery import Celery # Import Celery to send tasks
 
 # Define and export the router
 router = APIRouter()
@@ -52,6 +53,9 @@ async def signup(user_data: dict, db: Session = Depends(get_db)):
     password = user_data.get("password")
     full_name = user_data.get("full_name")
     age = user_data.get("age")
+    role = user_data.get("role", "patient")
+    hospital_name = user_data.get("hospital_name")
+    certifications = user_data.get("certifications")
     
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
@@ -62,7 +66,10 @@ async def signup(user_data: dict, db: Session = Depends(get_db)):
         email=email,
         hashed_password=hashed_password,
         full_name=full_name,
-        age=age
+        age=age,
+        role=role,
+        hospital_name=hospital_name,
+        certifications=certifications
     )
     db.add(new_user)
     db.commit()
@@ -70,6 +77,26 @@ async def signup(user_data: dict, db: Session = Depends(get_db)):
     
     # Create and return access token (same as login)
     access_token = create_access_token(data={"sub": new_user.email})
+
+    # TRIGGER WELCOME EMAIL (Async)
+    try:
+        # Create a transient Celery instance just for sending the message
+        # This avoids complex imports from worker.py
+        # Create a transient Celery instance matching the worker's app name
+        celery_client = Celery(
+            "medifusion_worker", 
+            broker=os.getenv("RABBITMQ_URL", "amqp://admin:admin@rabbitmq:5672/")
+        )
+        # Send task by name
+        celery_client.send_task(
+            "send_welcome_email", 
+            args=[new_user.email, new_user.full_name]
+        )
+        print(f"Task 'send_welcome_email' sent to broker for {new_user.email}")
+    except Exception as e:
+        # Don't fail the signup if email fails to queue
+        print(f"Failed to queue welcome email: {e}")
+
     return {"access_token": access_token, "token_type": "bearer"}
 
 # 3. GET CURRENT USER

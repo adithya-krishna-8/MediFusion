@@ -8,6 +8,8 @@ import AnalysisResults from '../components/AnalysisResults';
 import DoctorFinder from '../components/DoctorFinder';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import 'jspdf-autotable';
+import TubesBackground from '../components/TubesBackground';
 
 const Home = () => {
   const [symptomsText, setSymptomsText] = useState('');
@@ -51,12 +53,12 @@ const Home = () => {
     if (!result || result.status !== 'success') return;
 
     const doc = new jsPDF();
-    
+
     // Header
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
     doc.text('MediFusion', 20, 20);
-    
+
     // Date
     const currentDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
@@ -66,9 +68,9 @@ const Home = () => {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text(`Report Generated: ${currentDate}`, 20, 30);
-    
+
     let yPosition = 45;
-    
+
     // Diagnosis
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
@@ -78,7 +80,7 @@ const Home = () => {
     doc.setFont('helvetica', 'normal');
     doc.text(result.diagnosis || 'Unable to determine', 20, yPosition);
     yPosition += 15;
-    
+
     // Recommended Specialist
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
@@ -88,7 +90,7 @@ const Home = () => {
     doc.setFont('helvetica', 'normal');
     doc.text(result.consult_doctor || 'General Practitioner', 20, yPosition);
     yPosition += 15;
-    
+
     // Recommended Tests
     if (result.recommended_tests && result.recommended_tests.length > 0) {
       doc.setFontSize(16);
@@ -107,7 +109,7 @@ const Home = () => {
       });
       yPosition += 5;
     }
-    
+
     // Tips
     if (result.tips && result.tips.length > 0) {
       if (yPosition > 250) {
@@ -130,7 +132,7 @@ const Home = () => {
       });
       yPosition += 5;
     }
-    
+
     // Prevention
     if (result.prevention && result.prevention.length > 0) {
       if (yPosition > 250) {
@@ -152,7 +154,7 @@ const Home = () => {
         }
       });
     }
-    
+
     // Save the PDF
     doc.save('MediFusion_Report.pdf');
   };
@@ -210,25 +212,29 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 relative overflow-hidden">
-      {/* Animated gradient blobs */}
-      <div className="gradient-blob top-0 left-0"></div>
-      <div className="gradient-blob-2"></div>
-      
+      {/* Animated gradient blobs - REPLACED WITH TUBES */}
+      <TubesBackground />
+
       <div className="container mx-auto px-4 py-8 max-w-5xl relative z-10 pt-24">
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 mt-8"
+          className="text-center mb-12 mt-0"
         >
-          <div className="flex justify-center items-center mb-4">
-            <HeartLogo className="w-16 h-16" />
-          </div>
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white mb-3">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 4.6, duration: 1.0 }}
+            className="flex justify-center items-center mb-0"
+          >
+            <HeartLogo className="w-24 h-24" />
+          </motion.div>
+          <h1 className="text-6xl md:text-7xl font-sans tracking-tighter font-bold text-white mb-1 -mt-4">
             MediFusion
           </h1>
-          <p className="text-lg text-slate-300 font-light">
+          <p className="text-2xl text-slate-300 font-light -mt-5">
             Empowering Healthcare Through Intelligence
           </p>
         </motion.header>
@@ -238,55 +244,63 @@ const Home = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-8 mb-6"
+          className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-5 mb-6"
         >
-          <label htmlFor="symptoms" className="block text-lg font-semibold text-white mb-4">
-            Enter Your Symptoms
-          </label>
-          <div className="relative">
-            <textarea
-              id="symptoms"
-              value={symptomsText}
-              onChange={(e) => setSymptomsText(e.target.value)}
-              placeholder="e.g., Headache, Nausea, Fever"
-              className="w-full h-40 p-5 pr-12 rounded-2xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50 resize-none text-lg"
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
-              className="absolute bottom-3 right-3 p-2 text-white hover:text-cyan-400 transition-colors disabled:opacity-50 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.8)]"
-              title="Attach file"
-            >
-              <Paperclip className="w-5 h-5" />
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,.pdf"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-          </div>
-          {selectedFile && (
-            <div className="mt-3 flex items-center gap-2">
-              <span className="inline-flex items-center gap-2 bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-lg text-sm font-medium border border-cyan-500/30">
-                {selectedFile.name}
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="hover:text-cyan-100"
-                  disabled={isLoading}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Col: Symptoms Input */}
+            <div>
+              <label htmlFor="symptoms" className="block text-lg font-semibold text-white mb-2">
+                Describe The Symptoms
+              </label>
+              <textarea
+                id="symptoms"
+                value={symptomsText}
+                onChange={(e) => setSymptomsText(e.target.value)}
+                placeholder="e.g., Headache, Nausea, Fever..."
+                className="w-full h-32 p-4 rounded-2xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50 resize-none text-lg border border-white/10"
+                disabled={isLoading}
+              />
             </div>
-          )}
-          <p className="text-sm text-slate-400 mt-3">
-            Separate multiple symptoms with commas. You can optionally attach an image or PDF.
-          </p>
+
+            {/* Right Col: File Upload */}
+            <div>
+              <label className="block text-lg font-semibold text-white mb-2">
+                Upload Medical Report (Optional)
+              </label>
+              <div
+                className={`relative w-full h-32 rounded-2xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center cursor-pointer
+                  ${selectedFile ? 'border-cyan-500 bg-cyan-500/10' : 'border-slate-600 hover:border-cyan-400 bg-slate-900/30 hover:bg-slate-900/50'}`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {!selectedFile ? (
+                  <>
+                    <Paperclip className="w-8 h-8 text-slate-400 mb-2" />
+                    <span className="text-sm text-slate-400 font-medium">Click to upload report scan</span>
+                    <span className="text-xs text-slate-500 mt-1">(Images or PDF)</span>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center p-4 w-full">
+                    <span className="text-cyan-300 font-medium truncate max-w-full px-4">{selectedFile.name}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleRemoveFile(); }}
+                      className="mt-2 text-red-400 hover:text-red-300 text-sm font-bold flex items-center gap-1 bg-red-500/10 px-3 py-1 rounded-full"
+                    >
+                      <X className="w-3 h-3" /> Remove
+                    </button>
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         {/* Analyze Button */}
@@ -305,7 +319,7 @@ const Home = () => {
         {/* Analysis Results Component */}
         {result && result.status === 'success' && !isLoading && result.conditions && (
           <>
-            <AnalysisResults 
+            <AnalysisResults
               data={{
                 diagnosis_summary: result.diagnosis_summary || '',
                 detailed_diagnosis: result.detailed_diagnosis || '',
@@ -315,9 +329,9 @@ const Home = () => {
                 lifestyle_tips: result.lifestyle_tips || []
               }}
             />
-            
+
             {/* Doctor Finder Component */}
-            <DoctorFinder 
+            <DoctorFinder
               diagnosisData={{
                 recommended_specialist: result.recommended_specialist || result.consult_doctor || 'General Practitioner'
               }}
@@ -330,7 +344,7 @@ const Home = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-8"
+            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl px-8 py-2"
           >
             <EKGAnimation />
           </motion.div>
@@ -366,7 +380,7 @@ const Home = () => {
                 <span className="text-sm font-medium">Download PDF</span>
               </button>
             </div>
-            
+
             <h2 className="text-3xl font-serif font-bold text-white mb-6 pr-32">
               Analysis Results
             </h2>
@@ -411,7 +425,7 @@ const Home = () => {
                     };
                     const severityBg = severityColors[condition.severity] || severityColors.medium;
                     const severityText = severityTextColors[condition.severity] || severityTextColors.medium;
-                    
+
                     return (
                       <div
                         key={index}
@@ -438,11 +452,10 @@ const Home = () => {
                         {/* Confidence Bar */}
                         <div className="mt-3 h-2 bg-black/20 rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all duration-500 ${
-                              condition.confidence >= 70 ? 'bg-red-500' :
+                            className={`h-full transition-all duration-500 ${condition.confidence >= 70 ? 'bg-red-500' :
                               condition.confidence >= 40 ? 'bg-yellow-500' :
-                              'bg-green-500'
-                            }`}
+                                'bg-green-500'
+                              }`}
                             style={{ width: `${condition.confidence}%` }}
                           />
                         </div>

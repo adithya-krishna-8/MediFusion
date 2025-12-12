@@ -85,9 +85,10 @@ const Profile = () => {
     const bmiStatus = getBMIStatus(bmi);
 
     if (loading) return <div className="text-white text-center mt-20">Loading Profile...</div>;
+    if (!user) return <div className="text-white text-center mt-20">Failed to load profile. Please try logging in again.</div>;
 
     return (
-        <div className="min-h-screen bg-slate-950 p-6 md:p-12 relative overflow-hidden pt-24">
+        <div className="min-h-screen bg-slate-950 p-6 md:p-12 relative overflow-hidden pt-64" style={{ paddingTop: '142px' }}>
             {/* Background */}
             <div className="gradient-blob top-0 right-0 opacity-20"></div>
 
@@ -100,8 +101,8 @@ const Profile = () => {
                     <button
                         onClick={() => isEditing ? handleUpdate() : setIsEditing(true)}
                         className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${isEditing
-                                ? 'bg-green-500 hover:bg-green-400 text-white shadow-lg shadow-green-500/20'
-                                : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                            ? 'bg-green-500 hover:bg-green-400 text-white shadow-lg shadow-green-500/20'
+                            : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
                             }`}
                     >
                         {isEditing ? <Save size={18} /> : <Edit2 size={18} />}
@@ -128,25 +129,25 @@ const Profile = () => {
                                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                     />
                                 ) : (
-                                    <p className="text-white font-medium">{user.full_name || 'Not set'}</p>
+                                    <p className="text-white font-medium">{user?.full_name || 'Not set'}</p>
                                 )}
                             </div>
                             <div>
                                 <label className="text-xs text-slate-500 uppercase">Email</label>
-                                <p className="text-slate-300 truncate">{user.email}</p>
+                                <p className="text-slate-300 truncate">{user?.email}</p>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs text-slate-500 uppercase">Age</label>
                                     {isEditing ? (
                                         <input type="number" className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white" value={formData.age} onChange={(e) => setFormData({ ...formData, age: e.target.value })} />
-                                    ) : (<p className="text-white">{user.age || '-'}</p>)}
+                                    ) : (<p className="text-white">{user?.age || '-'}</p>)}
                                 </div>
                                 <div>
                                     <label className="text-xs text-slate-500 uppercase">Blood Type</label>
                                     {isEditing ? (
                                         <input type="text" className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white" value={formData.blood_type} onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })} placeholder="O+" />
-                                    ) : (<p className="text-white">{user.blood_type || '-'}</p>)}
+                                    ) : (<p className="text-white">{user?.blood_type || '-'}</p>)}
                                 </div>
                             </div>
                         </div>
@@ -162,13 +163,13 @@ const Profile = () => {
                                 <label className="text-xs text-slate-500 uppercase flex items-center gap-1"><Ruler size={12} /> Height (cm)</label>
                                 {isEditing ? (
                                     <input type="number" className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white" value={formData.height} onChange={(e) => setFormData({ ...formData, height: e.target.value })} placeholder="e.g. 175" />
-                                ) : (<p className="text-2xl font-light text-white">{user.height || '-'}<span className="text-sm text-slate-500 ml-1">cm</span></p>)}
+                                ) : (<p className="text-2xl font-light text-white">{user?.height || '-'}<span className="text-sm text-slate-500 ml-1">cm</span></p>)}
                             </div>
                             <div>
                                 <label className="text-xs text-slate-500 uppercase flex items-center gap-1"><Weight size={12} /> Weight (kg)</label>
                                 {isEditing ? (
                                     <input type="number" className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: e.target.value })} placeholder="e.g. 70" />
-                                ) : (<p className="text-2xl font-light text-white">{user.weight || '-'}<span className="text-sm text-slate-500 ml-1">kg</span></p>)}
+                                ) : (<p className="text-2xl font-light text-white">{user?.weight || '-'}<span className="text-sm text-slate-500 ml-1">kg</span></p>)}
                             </div>
                         </div>
                     </motion.div>

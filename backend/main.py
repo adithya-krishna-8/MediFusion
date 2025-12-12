@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import models
 from database import engine
-from routers import auth, disease  # Ensure these exist
+from routers import auth, disease, medicines  # Ensure these exist
 import logging
 
 # Configure logging
@@ -24,6 +24,7 @@ app.add_middleware(
 # Include Routers - NO PREFIX for Auth
 app.include_router(auth.router, prefix="/api", tags=["Authentication"])
 app.include_router(disease.router, prefix="/api/disease", tags=["Disease"])
+app.include_router(medicines.router, prefix="/api", tags=["Medicines"])
 
 @app.on_event("startup")
 async def startup_event():

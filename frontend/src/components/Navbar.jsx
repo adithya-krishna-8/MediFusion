@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import HeartLogo from './HeartLogo';
 
 const Navbar = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { currentUser, logout, isGuestMode, exitGuestMode } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,8 +12,8 @@ const Navbar = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('token'); // Also remove old token if exists
     logout();
-    // Redirect the user to /login
-    navigate('/login');
+    // Redirect the user to /
+    navigate('/');
   };
 
   return (
@@ -23,7 +23,7 @@ const Navbar = () => {
           {/* Left: Brand */}
           <Link to="/" className="flex items-center gap-2">
             <HeartLogo className="w-8 h-8" />
-            <h1 className="text-2xl font-serif font-bold text-white">
+            <h1 className="text-2xl font-sans tracking-tighter font-bold text-white">
               MediFusion
             </h1>
           </Link>
@@ -31,7 +31,7 @@ const Navbar = () => {
           {/* Right: Navigation Links */}
           <div className="flex items-center space-x-4 md:space-x-6">
             <div className="flex items-center space-x-3 md:space-x-6">
-              {isAuthenticated ? (
+              {currentUser ? (
                 <>
                   <Link
                     to="/"
@@ -52,6 +52,12 @@ const Navbar = () => {
                     Heart Health
                   </Link>
                   <Link
+                    to="/medicines"
+                    className="text-slate-300 hover:text-white font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                  >
+                    Medicines
+                  </Link>
+                  <Link
                     to="/profile"
                     className="text-slate-300 hover:text-white font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                   >
@@ -65,12 +71,22 @@ const Navbar = () => {
                   </button>
                 </>
               ) : (
-                <Link
-                  to="/login"
-                  className="text-slate-300 hover:text-white font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                >
-                  Login
-                </Link>
+                <>
+                  <Link
+                    to="/heart-health"
+                    className="text-slate-300 hover:text-white font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                  >
+                    Heart Health
+                  </Link>
+                  {isGuestMode && (
+                    <button
+                      onClick={() => exitGuestMode()}
+                      className="text-slate-300 hover:text-white font-medium transition-all text-sm md:text-base hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                    >
+                      Login
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

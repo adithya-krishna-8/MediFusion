@@ -54,6 +54,14 @@ services:
       timeout: 5s
       retries: 5
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
   backend:
     build:
       context: ./backend
@@ -87,6 +95,29 @@ services:
       dockerfile: Dockerfile
     container_name: medifusion-worker
     command: celery -A worker.celery_app worker --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://medifusion_user:securepassword123@db:5432/medifusion_db
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medifusion-beat
+    command: celery -A worker.celery_app beat --loglevel=info
     env_file:
       - .env
     environment:

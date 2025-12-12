@@ -1,0 +1,256 @@
+/* Scoped variables for the animation */
+.animated-title-wrapper {
+  --u-lead: 0ms;
+  --duration: 5.2s;
+  --stagger: 90ms;
+  --z-start: 1100px;
+  --scale-start: 3.1;
+  --overshoot-z: 80px;
+  --overshoot-scale: 1.05;
+  /* reduced from 1.08 */
+  --blur-start: 8px;
+  --blur-phase: 0.35s;
+  /* fast blur fade */
+  --gap: 1px;
+  --letter-space: 0.01em;
+  --start-letter-extra: 0.14em;
+  --start-spread-step: 50px;
+  --nudge-phase: 0.20s;
+
+  /* Use the user's background or transparent if integrated? 
+     The user's code had a specific dark radial gradient. 
+     We'll leave background handling to the parent component or keep strictly text styles here. */
+  /* --fg: #fff; */
+  color: #fff;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Ensure 3D context */
+  perspective: 1400px;
+  overflow: visible;
+  /* modification: don't hide overflow unless necessary */
+}
+
+.title {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Poppins", sans-serif;
+  font-weight: 800;
+  /* Adjusted font size to fit responsive layout, originally clamp(40px, 9vw, 100px) */
+  font-size: clamp(50px, 10vw, 110px);
+  letter-spacing: var(--letter-space);
+  display: inline-flex;
+  gap: var(--gap);
+  transform-style: preserve-3d;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+.title span {
+  position: relative;
+  display: inline-block;
+
+  /* Initial filter state */
+  --blur-amount: var(--blur-start);
+  filter: blur(var(--blur-amount)) brightness(1.25);
+
+  --nudge: 0px;
+  --nudge-start: 0px;
+
+  transform-origin: 50% 50% 0;
+  backface-visibility: hidden;
+  will-change: transform, filter, opacity;
+  opacity: 0.95;
+
+  /* Smoother, majestic entry curve */
+  animation: reverseBoom var(--duration) cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    blurFade var(--blur-phase) linear both,
+    nudgeFade var(--nudge-phase) linear both;
+}
+
+/* Stagger delays */
+.title span:nth-child(5) {
+  animation-delay: 0s;
+}
+
+.title span:nth-child(6) {
+  animation-delay: 0s;
+}
+
+.title span:nth-child(4) {
+  animation-delay: calc(1 * var(--stagger));
+}
+
+.title span:nth-child(7) {
+  animation-delay: calc(2 * var(--stagger));
+}
+
+.title span:nth-child(3) {
+  animation-delay: calc(3 * var(--stagger));
+}
+
+.title span:nth-child(8) {
+  animation-delay: calc(4 * var(--stagger));
+}
+
+.title span:nth-child(2) {
+  animation-delay: calc(5 * var(--stagger));
+}
+
+.title span:nth-child(9) {
+  animation-delay: calc(6 * var(--stagger));
+}
+
+.title span:nth-child(1) {
+  animation-delay: calc(7 * var(--stagger));
+}
+
+.title span:nth-child(10) {
+  animation-delay: calc(8 * var(--stagger));
+}
+
+/* Tilt */
+.title span {
+  --tilt: 1.2deg;
+}
+
+.title span:nth-child(odd) {
+  --tilt: -1.2deg;
+}
+
+/* Start positions */
+.title span:nth-child(5) {
+  --start-x: -38px;
+  --nudge-start: -20px;
+}
+
+.title span:nth-child(6) {
+  --start-x: 40px;
+  --nudge-start: 25px;
+}
+
+.title span:nth-child(4) {
+  --start-x: calc(-1 * var(--start-spread-step));
+}
+
+.title span:nth-child(7) {
+  --start-x: calc(1 * var(--start-spread-step));
+}
+
+.title span:nth-child(3) {
+  --start-x: calc(-2 * var(--start-spread-step));
+}
+
+.title span:nth-child(8) {
+  --start-x: calc(2 * var(--start-spread-step));
+}
+
+.title span:nth-child(2) {
+  --start-x: calc(-3 * var(--start-spread-step));
+}
+
+.title span:nth-child(9) {
+  --start-x: calc(3 * var(--start-spread-step));
+}
+
+.title span:nth-child(1) {
+  --start-x: calc(-4 * var(--start-spread-step));
+}
+
+.title span:nth-child(10) {
+  --start-x: calc(4 * var(--start-spread-step));
+}
+
+@keyframes reverseBoom {
+  0% {
+    transform: translateX(calc(var(--start-x) + var(--nudge))) translate3d(0, 0, var(--z-start)) scale(var(--scale-start)) rotateX(var(--tilt)) rotateY(var(--tilt));
+    filter: blur(var(--blur-amount)) brightness(1.25);
+    opacity: 0.98;
+    letter-spacing: calc(var(--letter-space) + var(--start-letter-extra));
+  }
+
+  66% {
+    transform: translateX(calc(var(--start-x) * 0.12)) translate3d(0, 0, var(--overshoot-z)) scale(var(--overshoot-scale));
+    filter: blur(var(--blur-amount)) brightness(1.06);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0) translate3d(0, 0, 0) scale(1) rotateX(0) rotateY(0);
+    filter: blur(var(--blur-amount)) brightness(1);
+    opacity: 1;
+    letter-spacing: var(--letter-space);
+  }
+}
+
+@keyframes blurFade {
+  0% {
+    --blur-amount: var(--blur-start);
+  }
+
+  100% {
+    --blur-amount: 0px;
+  }
+}
+
+@keyframes nudgeFade {
+  0% {
+    --nudge: var(--nudge-start);
+  }
+
+  100% {
+    --nudge: 0px;
+  }
+}
+
+/* Glow Trail */
+.title span::after {
+  content: attr(data-char);
+  position: absolute;
+  inset: 0;
+  transform: translateZ(-1px) scale(1.02);
+  filter: blur(6px);
+  opacity: 0.12;
+  animation: glowTrail var(--duration) cubic-bezier(.2, .7, .1, 1) both;
+  pointer-events: none;
+}
+
+@keyframes glowTrail {
+  0% {
+    opacity: .12;
+    filter: blur(8px);
+  }
+
+  40% {
+    opacity: .09;
+    filter: blur(5px);
+  }
+
+  75% {
+    opacity: .05;
+    filter: blur(3px);
+  }
+
+  100% {
+    opacity: 0;
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .title span,
+  .title span::after {
+    animation: none;
+  }
+
+  .title span {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .title {
+    letter-spacing: var(--letter-space);
+  }
+}

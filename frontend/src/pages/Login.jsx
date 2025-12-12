@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axiosClient from '../api/axiosClient';
 import HeartLogo from '../components/HeartLogo';
+import HeartLogo from '../components/HeartLogo';
+import TubesBackground from '../components/TubesBackground';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -84,10 +86,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated gradient blobs */}
-      <div className="gradient-blob top-0 left-0"></div>
-      <div className="gradient-blob-2"></div>
+    <div className="min-h-screen bg-slate-950 flex items-start justify-center p-4 pt-40 relative overflow-hidden">
+      {/* Animated gradient blobs - REPLACED WITH TUBES */}
+      <TubesBackground />
 
       <div className="w-full max-w-md flex flex-col items-center space-y-8 relative z-10">
         {/* Branding - Above the card */}
@@ -97,13 +98,13 @@ const Login = () => {
           transition={{ duration: 0.6 }}
           className="text-center"
         >
-          <div className="flex justify-center items-center mb-6">
-            <HeartLogo className="w-20 h-20" />
+          <div className="flex justify-center items-center mb-2">
+            <HeartLogo className="w-32 h-32" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white mb-4">
+          <h1 className="text-6xl md:text-7xl font-serif font-bold text-white mb-2 -mt-4">
             MediFusion
           </h1>
-          <p className="text-2xl font-semibold text-slate-300">
+          <p className="text-3xl font-semibold text-slate-300 -mt-5">
             Empowering Healthcare Through Intelligence
           </p>
         </motion.div>

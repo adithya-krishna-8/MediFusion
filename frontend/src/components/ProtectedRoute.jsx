@@ -20,9 +20,9 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // If NO token exists, redirect to /login
+  // If NO token exists, redirect to /
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // If token exists, render the protected page

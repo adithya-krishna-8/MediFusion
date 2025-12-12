@@ -10,6 +10,8 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [isGuestMode, setIsGuestMode] = useState(false);
+
   useEffect(() => {
     // Check if user is logged in on page load
     const token = localStorage.getItem('token');
@@ -27,9 +29,20 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     setCurrentUser(null);
+    setIsGuestMode(false); // Reset guest mode on logout
   };
 
-  const value = { currentUser, login, logout };
+  const enterGuestMode = () => setIsGuestMode(true);
+  const exitGuestMode = () => setIsGuestMode(false);
+
+  const value = {
+    currentUser,
+    login,
+    logout,
+    isGuestMode,
+    enterGuestMode,
+    exitGuestMode
+  };
 
   return (
     <AuthContext.Provider value={value}>

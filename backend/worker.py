@@ -7,8 +7,10 @@ import google.generativeai as genai
 from celery import Celery
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Consultation, Base
+from models import Consultation, Base, Medicine, User
 from dotenv import load_dotenv
+import asyncio
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 
 # CRITICAL: Load environment variables from .env file BEFORE reading them
 # This ensures GEMINI_API_KEY and other variables are available
@@ -113,6 +115,70 @@ celery_app.conf.update(
     result_backend_max_retries=10,
 )
 
+# Email Configuration
+conf = ConnectionConfig(
+    MAIL_USERNAME=os.getenv("MAIL_USERNAME", "your_email@gmail.com"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", "your_app_password"),
+    MAIL_FROM=os.getenv("MAIL_FROM", os.getenv("MAIL_USERNAME", "your_email@gmail.com")),
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
+)
+
+@celery_app.task(name="send_welcome_email")
+def send_welcome_email_task(email_address: str, full_name: str):
+    """
+    Sends a welcome email using fastapi-mail.
+    This is run asynchronously by the Celery worker.
+    """
+    logger.info(f"Preparing welcome email for {email_address}")
+    
+    html = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; color: #333;">
+            <div style="background-color: #f8fafc; padding: 20px; text-align: center;">
+                <h1 style="color: #0ea5e9;">Welcome to MediFusion!</h1>
+            </div>
+            <div style="padding: 20px; max-width: 600px; margin: 0 auto;">
+                <p>Hello <strong>{full_name}</strong>,</p>
+                <p><strong>Thank you for trying MediFusion!</strong> We are thrilled to have you join our journey towards smarter healthcare.</p>
+                <p>With your new account, you can:</p>
+                <ul>
+                    <li>Use our AI-powered symptom checker.</li>
+                    <li>Track your diagnosis history.</li>
+                    <li>Learn about heart health and medicines.</li>
+                </ul>
+                <p>If you have any questions, feel free to reply to this email.</p>
+                <br>
+                <p>Best regards,</p>
+                <p>The MediFusion Team</p>
+            </div>
+        </body>
+    </html>
+    """.format(full_name=full_name)
+    
+    # Simple Text fallback
+    message = MessageSchema(
+        subject="Welcome to MediFusion",
+        recipients=[email_address],
+        body=html,
+        subtype=MessageType.html
+    )
+    
+    fm = FastMail(conf)
+    
+    # Run async send_message in sync Celery task
+    try:
+        logger.info(f"Connecting to SMTP server {conf.MAIL_SERVER}:{conf.MAIL_PORT}...")
+        asyncio.run(fm.send_message(message))
+        logger.info(f"✓ EMAIL SENT SUCCESSFULLY to {email_address}")
+    except Exception as e:
+        logger.error(f"❌ FASTAPI-MAIL ERROR: {e}")
+        logger.error(f"Check configuration: USER={conf.MAIL_USERNAME}, HOST={conf.MAIL_SERVER}")
+
 # 4. The "Dr. AI" Logic Task using Gemini API
 @celery_app.task(name="predict_disease", bind=True, max_retries=3, default_retry_delay=10)
 def predict_disease(self, symptoms: str, consultation_id: int = None):
@@ -199,62 +265,20 @@ def predict_disease(self, symptoms: str, consultation_id: int = None):
         # Get model name from environment variable
         env_model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash").strip()
         
-        # DYNAMIC MODEL DISCOVERY
-        # Instead of hardcoding, we ask the API what is available
-        models_to_try = []
-        try:
-            logger.info("Discovering available Gemini models...")
-            available_models = []
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    available_models.append(m.name)
-            
-            logger.info(f"Available models found: {available_models}")
-            
-            # Prioritize models:
-            # 1. Environment variable model (if exists)
-            # 2. 1.5-Flash variants
-            # 3. 1.5-Pro variants
-            # 4. 1.0 / Pro variants
-            # 5. Anything else
-            
-            # Helper to check partial match
-            def get_matches(substring):
-                return [m for m in available_models if substring in m]
-
-            # Build prioritized list
-            if any(env_model_name in m for m in available_models):
-                models_to_try.append(env_model_name)
-                
-            models_to_try.extend(get_matches("gemini-1.5-flash"))
-            models_to_try.extend(get_matches("gemini-1.5-pro"))
-            models_to_try.extend(get_matches("gemini-1.0"))
-            models_to_try.extend(get_matches("gemini-pro"))
-            
-            # Add everything else that wasn't added yet
-            for m in available_models:
-                if m not in models_to_try:
-                    models_to_try.append(m)
-            
-            # If discovery failed or returned nothing, fallback to hardcoded defaults
-            if not models_to_try:
-                logger.warning("No models discovered via API, falling back to hardcoded list")
-                models_to_try = [env_model_name, "gemini-1.5-flash", "gemini-pro"]
-                
-        except Exception as e:
-            logger.error(f"Failed to list models dynamically: {e}")
-            models_to_try = [env_model_name, "gemini-1.5-flash", "gemini-pro"]
-
-        # Clean list (remove duplicates, ensure plain names)
-        # some m.name might include 'models/' prefix, ensure consistency
-        final_models = []
-        for m in models_to_try:
-            # strip 'models/' prefix if we are going to re-add it or just use as is
-            # GenerativeModel accepts both "models/foo" and "foo" usually, but best to use as returned
-            if m not in final_models:
-                final_models.append(m)
+        # DYNAMIC MODEL DISCOVERY DISABLED to prevent Rate Limit (429) errors on Free Tier.
+        # requesting list_models() counts as a request, and iterating fast hits RPM limits.
         
-        models_to_try = final_models
+        # We strictly prefer 1.5-flash for speed and higher RPM (15 RPM vs 2 RPM for Pro)
+        models_to_try = ["gemini-1.5-flash"]
+        
+        # If the environment variable is set to something else, add it as a backup or primary?
+        # Ideally, just stick to Flash for stability unless user forces otherwise.
+        if env_model_name and env_model_name != "gemini-1.5-flash":
+             # If user specifically asked for another model in .env, try that first?
+             # No, if they are hitting quotas, Flash is the safest bet. 
+             # Let's just log what we are doing.
+             logger.info(f"Overriding configured model '{env_model_name}' with 'gemini-1.5-flash' for stability.")
+        
         logger.info(f"Final model trial order: {models_to_try}")
         
         # Create a detailed prompt for medical diagnosis requesting JSON (PRE-CALCULATED)
@@ -354,18 +378,6 @@ Ensure the response is purely valid JSON without markdown formatting."""
                 logger.warning(f"Failed to update database (consultation_id={consultation_id}): {db_error}")
 
         return diagnosis_data
-        
-        # Update database if consultation_id is provided
-        if consultation_id and SessionLocal:
-            try:
-                # Store the JSON string in the database
-                json_str = json.dumps(diagnosis_data)
-                _update_consultation(consultation_id, json_str)
-                logger.info(f"✓ Database updated for consultation_id={consultation_id}")
-            except Exception as db_error:
-                logger.warning(f"Failed to update database (consultation_id={consultation_id}): {db_error}")
-
-        return diagnosis_data
 
     except Exception as e:
         logger.error(f"Unexpected error in predict_disease task: {str(e)}", exc_info=True)
@@ -390,5 +402,96 @@ def _update_consultation(consultation_id: int, diagnosis: str):
         db.rollback()
         logger.error(f"ERROR updating consultation {consultation_id}: {e}", exc_info=True)
         raise
+    finally:
+        db.close()
+
+# Celery Beat Schedule
+celery_app.conf.beat_schedule = {
+    'check-medicine-reminders-every-minute': {
+        'task': 'check_medicine_reminders',
+        'schedule': 60.0, # Run every 60 seconds
+    },
+}
+
+@celery_app.task(name="check_medicine_reminders")
+def check_medicine_reminders():
+    """
+    Periodic task to check if any medicines need to be taken now (UTC time).
+    """
+    from datetime import datetime
+    import pytz
+    
+    # We'll use UTC for simplicity on the server, but assuming user input is consistent?
+    # Ideally, we should store user timezone or handle offsets.
+    # For MVP: Assuming user inputs time in UTC or we just check server time matching.
+    # Let's just use server system time (which is likely UTC in Docker).
+    
+    now = datetime.now() 
+    current_time_str = now.strftime("%H:%M") # "09:00"
+    
+    logger.info(f"Checking medicine reminders for time: {current_time_str}")
+    
+    if not SessionLocal:
+        logger.error("Database session not initialized")
+        return
+
+    db = SessionLocal()
+    try:
+        # Find active medicines for this time
+        # Join with User to get email
+        medicines_due = db.query(Medicine).join(User).filter(
+            Medicine.reminder_time == current_time_str,
+            Medicine.is_active == 1
+        ).all()
+        
+        if not medicines_due:
+            logger.info("No medicines due at this time.")
+            return
+
+        logger.info(f"Found {len(medicines_due)} medicines due.")
+        
+        for med in medicines_due:
+            user_email = med.owner.email
+            user_name = med.owner.full_name or "User"
+            med_name = med.name
+            dosage = med.dosage
+            
+            # Send Email (Sync or fire async task? We are already in a worker)
+            # We can use the same logic as welcome email logic or call it
+            logger.info(f"Sending reminder for {med_name} to {user_email}")
+            
+            # Construct Email
+            html = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif;">
+                    <div style="padding: 20px; background-color: #fef2f2; border: 1px solid #ef4444; border-radius: 8px;">
+                        <h2 style="color: #b91c1c; margin-top: 0;">Medicine Reminder 💊</h2>
+                        <p>Hi {user_name},</p>
+                        <p>It is <strong>{current_time_str}</strong>. Time to take your medicine:</p>
+                        <h3 style="background-color: white; padding: 10px; display: inline-block; border-radius: 4px;">
+                            {med_name} ({dosage})
+                        </h3>
+                        <p>Stay healthy!</p>
+                        <p>MediFusion AI</p>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            message = MessageSchema(
+                subject=f"Reminder: Time to take {med_name}",
+                recipients=[user_email],
+                body=html,
+                subtype=MessageType.html
+            )
+            
+            fm = FastMail(conf)
+            try:
+                asyncio.run(fm.send_message(message))
+            except Exception as e:
+                logger.error(f"Failed to send reminder to {user_email}: {e}")
+                
+    except Exception as e:
+        logger.error(f"Error checking reminders: {e}")
     finally:
         db.close()

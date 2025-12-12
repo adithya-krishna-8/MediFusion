@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import HeartLogo from '../components/HeartLogo';
-import { Activity, Heart, Shield, AlertTriangle } from 'lucide-react';
+import { Activity, Shield, AlertTriangle } from 'lucide-react';
 
 const HeartHealth = () => {
     const conditions = [
@@ -69,13 +69,18 @@ const HeartHealth = () => {
                     transition={{ duration: 0.6 }}
                     className="text-center mb-16"
                 >
-                    <div className="flex justify-center items-center mb-4">
-                        <HeartLogo className="w-16 h-16" />
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-serif font-bold text-white mb-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1.0 }}
+                        className="flex justify-center items-center mb-6"
+                    >
+                        <HeartLogo className="w-24 h-24" />
+                    </motion.div>
+                    <h1 className="text-6xl md:text-7xl font-serif font-bold text-white mb-6 mt-2">
                         Heart Health Guide
                     </h1>
-                    <p className="text-xl text-slate-300 font-light max-w-2xl mx-auto">
+                    <p className="text-2xl text-slate-300 font-light max-w-2xl mx-auto mt-2">
                         Understanding the most common heart conditions to protect your most vital organ.
                     </p>
                 </motion.header>
