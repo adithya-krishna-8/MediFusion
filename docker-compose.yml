@@ -142,6 +142,8 @@ services:
     container_name: medifusion-frontend
     environment:
       - REACT_APP_API_URL=http://localhost/api
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "3000:3000"
     volumes:

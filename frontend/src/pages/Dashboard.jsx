@@ -253,6 +253,19 @@ const Dashboard = () => {
     return err.response?.data?.message || err.message || 'An error occurred';
   };
 
+  // Load persistent result on mount
+  useEffect(() => {
+    const savedResult = localStorage.getItem('diagnosisResult');
+    if (savedResult) {
+      try {
+        setResult(JSON.parse(savedResult));
+      } catch (e) {
+        console.error('Failed to parse saved diagnosis', e);
+        localStorage.removeItem('diagnosisResult');
+      }
+    }
+  }, []);
+
   const handleAnalyze = async () => {
     if (!symptomsText.trim()) {
       setError('Please enter at least one symptom');
@@ -283,7 +296,9 @@ const Dashboard = () => {
       });
 
       if (response.data.status === 'SUCCESS') {
-        setResult(response.data.result);
+        const newResult = response.data.result;
+        setResult(newResult);
+        localStorage.setItem('diagnosisResult', JSON.stringify(newResult));
       } else {
         setError(response.data.error || 'An error occurred during analysis');
       }
@@ -303,7 +318,7 @@ const Dashboard = () => {
       <div className="gradient-blob top-0 left-0"></div>
       <div className="gradient-blob-2"></div>
 
-      <div className="container mx-auto px-4 py-8 max-w-5xl relative z-10 pt-32" style={{ paddingTop: '120px' }}>
+      <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10 pt-32" style={{ paddingTop: '120px' }}>
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
@@ -312,11 +327,6 @@ const Dashboard = () => {
           className="text-center mb-6 mt-0"
         >
           <div className="flex justify-center items-center mb-0">
-            {/* Heart Logo removed or kept? User said "title displayed in an animation style". 
-                The animation is wide. I'll keep the logo above it or let the title be the main hero. 
-                Let's keep the logo but maybe adjust spacing. 
-                Actually, the user's animation is Big. 
-                Replacing the h1 text with the component. */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -606,61 +616,24 @@ const Dashboard = () => {
               </motion.button>
             </div>
 
-            {/* Analysis Results Component */}
-            {result && result.status === 'success' && !isLoading && result.conditions && (
-              <>
-                <AnalysisResults
-                  data={{
-                    diagnosis_summary: result.diagnosis_summary || '',
-                    detailed_diagnosis: result.detailed_diagnosis || '',
-                    conditions: result.conditions,
-                    recommended_specialist: result.recommended_specialist || result.consult_doctor || 'General Practitioner',
-                    precautions: result.precautions || [],
-                    lifestyle_tips: result.lifestyle_tips || []
-                  }}
-                />
-
-                {/* Doctor Finder Component */}
-                <DoctorFinder
-                  diagnosisData={{
-                    recommended_specialist: result.recommended_specialist || result.consult_doctor || 'General Practitioner'
-                  }}
-                />
-              </>
-            )}
-
             {/* Loading State - EKG Animation */}
             {isLoading && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl px-8 py-2"
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl px-8 py-2 mb-8"
               >
                 <EKGAnimation />
               </motion.div>
             )}
 
-            {/* Error State */}
-            {error && !isLoading && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/20 border border-red-500/50 rounded-2xl p-6 mb-6 backdrop-blur-sm"
-              >
-                <p className="text-red-300 font-semibold">Error: {error}</p>
-              </motion.div>
-            )}
+            {/* Combined Results Section */}
+            {result && result.status === 'success' && !isLoading && result.conditions && (
+              <div className="animate-fade-in bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-6">
 
-            {/* Result Card */}
-            {result && result.status === 'success' && !isLoading && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-8 mt-6 relative"
-              >
-                {/* Download PDF Button - Top Right */}
-                <div className="absolute top-6 right-6">
+                {/* Unified Header */}
+                <div className="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
+                  <h2 className="text-3xl font-serif font-bold text-white">Analysis Report</h2>
                   <button
                     onClick={generatePDF}
                     className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-200"
@@ -671,147 +644,61 @@ const Dashboard = () => {
                   </button>
                 </div>
 
-                <h2 className="text-3xl font-serif font-bold text-white mb-6 pr-32">
-                  Analysis Results
-                </h2>
+                {/* Side-by-Side Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
+                  {/* Left Column: Analysis Results */}
+                  <div className="w-full">
+                    <AnalysisResults
+                      data={{
+                        diagnosis_summary: result.diagnosis_summary || '',
+                        detailed_diagnosis: result.detailed_diagnosis || '',
+                        conditions: result.conditions,
+                        recommended_specialist: result.recommended_specialist || result.consult_doctor || 'General Practitioner',
+                        precautions: result.precautions || [],
+                        lifestyle_tips: result.lifestyle_tips || []
+                      }}
+                    />
+                  </div>
 
-                {/* Diagnosis - Highlighted Section */}
-                <div className="mb-8 pb-8 border-b border-white/20">
-                  <div className="bg-gradient-to-r from-red-500/20 to-transparent border-l-4 border-red-500 rounded-r-2xl p-6 -ml-8 pl-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <AlertCircle className="w-6 h-6 text-red-400" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-red-300">
-                        Most Probable Condition
-                      </span>
-                    </div>
-                    <p className="text-4xl font-serif font-bold text-white flex items-center gap-3">
-                      {result.diagnosis}
-                    </p>
-                    {result.diagnosis_summary && (
-                      <p className="text-slate-300 mt-3 text-lg">
-                        {result.diagnosis_summary}
-                      </p>
+                  {/* Right Column: Doctor Finder */}
+                  <div className="w-full">
+                    <DoctorFinder
+                      diagnosisData={{
+                        recommended_specialist: result.recommended_specialist || result.consult_doctor || 'General Practitioner'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Footer Section: Prevention & Tips */}
+                <div className="mt-8 pt-6 border-t border-white/20">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Prevention */}
+                    {result.prevention && result.prevention.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-300 mb-3">Prevention</h3>
+                        <ul className="list-disc list-inside space-y-2 text-slate-300">
+                          {result.prevention.map((item, index) => (
+                            <li key={index} className="leading-relaxed">{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Tips */}
+                    {result.tips && result.tips.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-300 mb-3">Health Tips</h3>
+                        <ul className="list-disc list-inside space-y-2 text-slate-300">
+                          {result.tips.map((item, index) => (
+                            <li key={index} className="leading-relaxed">{item}</li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
                   </div>
                 </div>
-
-                {/* All Conditions with Confidence Scores */}
-                {result.conditions && result.conditions.length > 0 && (
-                  <div className="mb-8 pb-8 border-b border-white/20">
-                    <h3 className="text-lg font-semibold text-slate-300 mb-4">
-                      Possible Conditions
-                    </h3>
-                    <div className="space-y-4">
-                      {result.conditions.map((condition, index) => {
-                        const severityColors = {
-                          high: 'border-red-500/50 bg-red-500/10',
-                          medium: 'border-yellow-500/50 bg-yellow-500/10',
-                          low: 'border-green-500/50 bg-green-500/10'
-                        };
-                        const severityTextColors = {
-                          high: 'text-red-300',
-                          medium: 'text-yellow-300',
-                          low: 'text-green-300'
-                        };
-                        const severityBg = severityColors[condition.severity] || severityColors.medium;
-                        const severityText = severityTextColors[condition.severity] || severityTextColors.medium;
-
-                        return (
-                          <div
-                            key={index}
-                            className={`border-l-4 rounded-r-xl p-4 ${severityBg}`}
-                          >
-                            <div className="flex items-start justify-between mb-2">
-                              <h4 className="text-xl font-bold text-white">
-                                {condition.name}
-                              </h4>
-                              <div className="flex items-center gap-3">
-                                <span className={`text-sm font-semibold px-3 py-1 rounded-full ${severityText} bg-black/20`}>
-                                  {condition.severity?.toUpperCase() || 'MEDIUM'}
-                                </span>
-                                <span className="text-lg font-bold text-white">
-                                  {condition.confidence}%
-                                </span>
-                              </div>
-                            </div>
-                            {condition.reasoning && (
-                              <p className="text-slate-300 text-sm leading-relaxed">
-                                {condition.reasoning}
-                              </p>
-                            )}
-                            {/* Confidence Bar */}
-                            <div className="mt-3 h-2 bg-black/20 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full transition-all duration-500 ${condition.confidence >= 70 ? 'bg-red-500' :
-                                  condition.confidence >= 40 ? 'bg-yellow-500' :
-                                    'bg-green-500'
-                                  }`}
-                                style={{ width: `${condition.confidence}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Doctor to Consult */}
-                <div className="mb-6 pb-6 border-b border-white/20">
-                  <h3 className="text-lg font-semibold text-slate-300 mb-3">
-                    Recommended Specialist
-                  </h3>
-                  <span className="inline-block bg-cyan-500/20 text-cyan-300 px-6 py-3 rounded-2xl font-semibold text-lg border border-cyan-500/30">
-                    {result.consult_doctor}
-                  </span>
-                </div>
-
-                {/* Recommended Tests */}
-                {result.recommended_tests && result.recommended_tests.length > 0 && (
-                  <div className="mb-6 pb-6 border-b border-white/20">
-                    <div className="flex items-center mb-3">
-                      <ClipboardList className="w-5 h-5 text-cyan-400 mr-2" />
-                      <h3 className="text-lg font-semibold text-slate-300">
-                        Recommended Medical Tests
-                      </h3>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {result.recommended_tests.map((test, index) => (
-                        <span
-                          key={index}
-                          className="inline-block bg-cyan-500/20 text-cyan-300 px-4 py-2 rounded-xl text-sm font-medium border border-cyan-500/30"
-                        >
-                          {test}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tips */}
-                {result.tips && result.tips.length > 0 && (
-                  <div className="mb-6 pb-6 border-b border-white/20">
-                    <h3 className="text-lg font-semibold text-slate-300 mb-3">Tips</h3>
-                    <ul className="list-disc list-inside space-y-2 text-slate-300">
-                      {result.tips.map((tip, index) => (
-                        <li key={index} className="leading-relaxed">{tip}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Prevention */}
-                {result.prevention && result.prevention.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-slate-300 mb-3">Prevention</h3>
-                    <ul className="list-disc list-inside space-y-2 text-slate-300">
-                      {result.prevention.map((item, index) => (
-                        <li key={index} className="leading-relaxed">{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </motion.div>
+              </div>
             )}
           </motion.div>
         )}

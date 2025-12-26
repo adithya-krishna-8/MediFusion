@@ -93,65 +93,69 @@ const HeartHealth = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            whileHover={{ y: -5, scale: 1.02 }}
-                            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl hover:shadow-2xl hover:bg-white/10 transition-all duration-300 group"
                         >
-                            {/* Card Header */}
-                            <div className={`h-2 w-20 rounded-full bg-gradient-to-r ${condition.color} mb-6`}></div>
+                            <motion.div
+                                whileHover={{ y: -5, scale: 1.02 }}
+                                transition={{ duration: 0.15, ease: "easeOut" }}
+                                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl hover:shadow-2xl hover:bg-white/10 transition-colors duration-150 h-full group"
+                            >
+                                {/* Card Header */}
+                                <div className={`h-2 w-20 rounded-full bg-gradient-to-r ${condition.color} mb-6`}></div>
 
-                            <h2 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">
-                                {condition.name}
-                            </h2>
+                                <h2 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">
+                                    {condition.name}
+                                </h2>
 
-                            {/* Cause Section */}
-                            <div className="mb-6">
-                                <p className="text-slate-300 text-sm leading-relaxed border-l-2 border-white/20 pl-4 italic">
-                                    "{condition.cause}"
-                                </p>
-                            </div>
-
-                            {/* Symptoms */}
-                            <div className="mb-6 flex items-start gap-3">
-                                <Activity className="w-5 h-5 text-red-400 mt-1 shrink-0" />
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider mb-1">Symptoms</h3>
-                                    <p className="text-slate-400 text-sm">{condition.symptoms}</p>
+                                {/* Cause Section */}
+                                <div className="mb-6">
+                                    <p className="text-slate-300 text-sm leading-relaxed border-l-2 border-white/20 pl-4 italic">
+                                        "{condition.cause}"
+                                    </p>
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/10">
-                                {/* Precautions */}
-                                <div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <AlertTriangle className="w-4 h-4 text-orange-400" />
-                                        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Precautions</h3>
+                                {/* Symptoms */}
+                                <div className="mb-6 flex items-start gap-3">
+                                    <Activity className="w-5 h-5 text-red-400 mt-1 shrink-0" />
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider mb-1">Symptoms</h3>
+                                        <p className="text-slate-400 text-sm">{condition.symptoms}</p>
                                     </div>
-                                    <ul className="space-y-2">
-                                        {condition.precautions.map((item, i) => (
-                                            <li key={i} className="text-xs text-slate-400 flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-orange-400/50"></span>
-                                                {item}
-                                            </li>
-                                        ))}
-                                    </ul>
                                 </div>
 
-                                {/* Tips */}
-                                <div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Shield className="w-4 h-4 text-emerald-400" />
-                                        <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Healthy Tips</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/10">
+                                    {/* Precautions */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <AlertTriangle className="w-4 h-4 text-orange-400" />
+                                            <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Precautions</h3>
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {condition.precautions.map((item, i) => (
+                                                <li key={i} className="text-xs text-slate-400 flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400/50"></span>
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
-                                    <ul className="space-y-2">
-                                        {condition.tips.map((item, i) => (
-                                            <li key={i} className="text-xs text-slate-400 flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/50"></span>
-                                                {item}
-                                            </li>
-                                        ))}
-                                    </ul>
+
+                                    {/* Tips */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Shield className="w-4 h-4 text-emerald-400" />
+                                            <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Healthy Tips</h3>
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {condition.tips.map((item, i) => (
+                                                <li key={i} className="text-xs text-slate-400 flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/50"></span>
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </motion.div>
                     ))}
                 </div>

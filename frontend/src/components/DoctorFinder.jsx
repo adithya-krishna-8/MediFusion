@@ -20,9 +20,9 @@ const DoctorFinder = ({ diagnosisData }) => {
   const mapRef = useRef(null);
 
   // Extract specialty from diagnosis data
-  const recommendedSpecialist = diagnosisData?.recommended_specialist || 
-                                diagnosisData?.consult_doctor || 
-                                'General Physician';
+  const recommendedSpecialist = diagnosisData?.recommended_specialist ||
+    diagnosisData?.consult_doctor ||
+    'General Physician';
 
   // Normalize specialty names for matching
   const normalizeSpecialty = (specialty) => {
@@ -38,22 +38,22 @@ const DoctorFinder = ({ diagnosisData }) => {
 
   useEffect(() => {
     // Filter doctors by specialty
-    let filtered = doctors.filter(doctor => 
+    let filtered = doctors.filter(doctor =>
       doctor.specialty.toLowerCase() === targetSpecialty.toLowerCase()
     );
 
     // Further filter by pincode if provided
     if (searchPincode.trim()) {
-      filtered = filtered.filter(doctor => 
+      filtered = filtered.filter(doctor =>
         doctor.pincode === searchPincode.trim()
       );
     }
 
     setFilteredDoctors(filtered);
-    
+
     // If no doctors found with pincode, show all matching specialty
     if (filtered.length === 0 && searchPincode.trim()) {
-      const specialtyFiltered = doctors.filter(doctor => 
+      const specialtyFiltered = doctors.filter(doctor =>
         doctor.specialty.toLowerCase() === targetSpecialty.toLowerCase()
       );
       setFilteredDoctors(specialtyFiltered);
@@ -62,7 +62,7 @@ const DoctorFinder = ({ diagnosisData }) => {
 
   // Set initial filtered doctors on mount
   useEffect(() => {
-    const initialFiltered = doctors.filter(doctor => 
+    const initialFiltered = doctors.filter(doctor =>
       doctor.specialty.toLowerCase() === targetSpecialty.toLowerCase()
     );
     setFilteredDoctors(initialFiltered);
@@ -121,7 +121,7 @@ const DoctorFinder = ({ diagnosisData }) => {
       </div>
 
       {/* Split View: List + Map */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Left Side: Doctor Cards List */}
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
           {filteredDoctors.length === 0 ? (
@@ -133,11 +133,10 @@ const DoctorFinder = ({ diagnosisData }) => {
               <div
                 key={doctor.id}
                 id={`doctor-${doctor.id}`}
-                className={`bg-gray-800/50 p-5 rounded-lg border transition-all duration-200 ${
-                  selectedDoctor === doctor.id
+                className={`bg-gray-800/50 p-5 rounded-lg border transition-all duration-200 ${selectedDoctor === doctor.id
                     ? 'border-cyan-500 shadow-lg shadow-cyan-500/20'
                     : 'border-gray-700 hover:border-gray-600'
-                }`}
+                  }`}
               >
                 <div className="flex gap-4">
                   {/* Doctor Image */}
@@ -146,7 +145,7 @@ const DoctorFinder = ({ diagnosisData }) => {
                     alt={doctor.name}
                     className="w-20 h-20 rounded-full object-cover border-2 border-gray-700"
                   />
-                  
+
                   {/* Doctor Info */}
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
@@ -160,7 +159,7 @@ const DoctorFinder = ({ diagnosisData }) => {
                         <span className="text-yellow-400 text-sm font-semibold">{doctor.rating}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-4 text-sm text-gray-300 mb-3">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
@@ -168,7 +167,7 @@ const DoctorFinder = ({ diagnosisData }) => {
                       </span>
                       <span className="text-cyan-400 font-semibold">₹{doctor.consultation_fee}</span>
                     </div>
-                    
+
                     <button
                       onClick={() => handleBookAppointment(doctor)}
                       className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-lg shadow-cyan-500/50"
