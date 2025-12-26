@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 /**
  * Login user
@@ -29,15 +29,15 @@ export async function login(email, password) {
  */
 export async function submitSymptoms(symptomsList, file = null) {
   const formData = new FormData();
-  
+
   // Always append symptoms as text
   formData.append('symptoms', symptomsList.join(', '));
-  
+
   // Only append file if it was selected
   if (file) {
     formData.append('file', file);
   }
-  
+
   const response = await axios.post(
     `${API_BASE_URL}/analyze`,
     formData,
